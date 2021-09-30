@@ -2,6 +2,27 @@
 import numbers
 import numpy as np
 import warnings
+from math import sqrt
+
+
+def wls_confidence_interval(data, z=1.96):
+    """Calculate the Wilson score confidence interval for a data set.
+
+    data : array of 1-dimensional data, 1's or 0's
+    z : float, z-score default=1.96 for a 95% confidence interval
+    """
+    n = len(data)
+
+    # counts the number of 1 or Trues over false or 0
+    p = len([i for i in data if i]) / n
+
+    denominator = 1 + z ** 2 / n
+    centre_adjusted_probability = p + z * z / (2 * n)
+    adjusted_standard_deviation = sqrt((p * (1 - p) + z * z / (4 * n)) / n)
+
+    lower_bound = (centre_adjusted_probability - z * adjusted_standard_deviation) / denominator
+    upper_bound = (centre_adjusted_probability + z * adjusted_standard_deviation) / denominator
+    return (lower_bound, upper_bound)
 
 
 def bootstrap(*args, **kwargs):
@@ -62,8 +83,10 @@ def bootstrap(*args, **kwargs):
 
     # Allow for a function that is the name of a method on an array
     if isinstance(func, str):
+
         def f(x):
             return getattr(x, func)()
+
     else:
         f = func
 
@@ -75,8 +98,7 @@ def bootstrap(*args, **kwargs):
 
     # Do the bootstrap
     if units is not None:
-        return _structured_bootstrap(args, n_boot, units, f,
-                                     func_kwargs, integers)
+        return _structured_bootstrap(args, n_boot, units, f, func_kwargs, integers)
 
     boot_dist = []
     for i in range(int(n_boot)):
