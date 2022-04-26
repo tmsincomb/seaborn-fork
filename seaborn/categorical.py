@@ -1158,7 +1158,7 @@ class _SwarmPlotter(_CategoricalScatterPlotter):
         left_first = True
         for x_j, y_j in neighbors:
             dy = y_i - y_j
-            dx = np.sqrt(max(d ** 2 - dy ** 2, 0)) * 1.05
+            dx = np.sqrt(max(d**2 - dy**2, 0)) * 1.05
             cl, cr = (x_j - dx, y_i), (x_j + dx, y_i)
             if left_first:
                 new_candidates = [cl, cr]
@@ -1178,7 +1178,7 @@ class _SwarmPlotter(_CategoricalScatterPlotter):
         neighbors_x = neighbors[:, 0]
         neighbors_y = neighbors[:, 1]
 
-        d_square = d ** 2
+        d_square = d**2
 
         for xy_i in candidates:
             x_i, y_i = xy_i
@@ -1628,6 +1628,12 @@ class _PointPlotter(_CategoricalStatPlotter):
         palette,
         errwidth=None,
         capsize=None,
+        edgecolor=None,
+        edgewidth=None,
+        lineweight=None,
+        linealpha=None,
+        linecolor=None,
+        markersize=None,
     ):
         """Initialize the plotter."""
         self.establish_variables(x, y, hue, data, orient, order, hue_order, units)
@@ -1663,6 +1669,14 @@ class _PointPlotter(_CategoricalStatPlotter):
         self.errwidth = errwidth
         self.capsize = capsize
 
+        # fork
+        self.edgecolor = edgecolor
+        self.edgewidth = edgewidth
+        self.lineweight = lineweight
+        self.linealpha = linealpha
+        self.linecolor = linecolor
+        self.markersize = markersize
+
     @property
     def hue_offsets(self):
         """Offsets relative to the center position for each hue level."""
@@ -1679,20 +1693,36 @@ class _PointPlotter(_CategoricalStatPlotter):
         pointpos = np.arange(len(self.statistic))
 
         # Get the size of the plot elements
-        lw = mpl.rcParams["lines.linewidth"] * 1.8 * self.scale
+        if self.lineweight:
+            lw = self.lineweight
+        else:
+            lw = mpl.rcParams["lines.linewidth"] * 1.8 * self.scale
         mew = lw * 0.75
-        markersize = np.pi * np.square(lw) * 2
+        if self.edgewidth:
+            mew = self.edgewidth
+        if self.markersize:
+            markersize = self.markersize
+        else:
+            markersize = np.pi * np.square(lw) * 2
 
         if self.plot_hues is None:
 
             # Draw lines joining each estimate point
             if self.join:
-                color = self.colors[0]
+                if self.linealpha:
+                    alpha = self.linealpha
+                else:
+                    alpha = 1
+
+                if self.linecolor:
+                    color = self.linecolor
+                else:
+                    color = self.colors[0]
                 ls = self.linestyles[0]
                 if self.orient == "h":
                     ax.plot(self.statistic, pointpos, color=color, ls=ls, lw=lw)
                 else:
-                    ax.plot(pointpos, self.statistic, color=color, ls=ls, lw=lw)
+                    ax.plot(pointpos, self.statistic, color=color, ls=ls, lw=lw, alpha=alpha)
 
             # Draw the confidence intervals
             self.draw_confints(ax, pointpos, self.confint, self.colors, self.errwidth, self.capsize)
@@ -1700,11 +1730,17 @@ class _PointPlotter(_CategoricalStatPlotter):
             # Draw the estimate points
             marker = self.markers[0]
             colors = [mpl.colors.colorConverter.to_rgb(c) for c in self.colors]
+            if self.edgecolor:
+                edgecolor = [self.edgecolor] * len(self.colors)
+            else:
+                edgecolor = colors
             if self.orient == "h":
                 x, y = self.statistic, pointpos
             else:
                 x, y = pointpos, self.statistic
-            ax.scatter(x, y, linewidth=mew, marker=marker, s=markersize, facecolor=colors, edgecolor=colors)
+            ax.scatter(
+                x, y, linewidth=mew, marker=marker, s=markersize, facecolor=colors, edgecolor=edgecolor, zorder=10
+            )
 
         else:
 
@@ -2915,7 +2951,7 @@ def stripplot(
         linewidth = size / 10
     if edgecolor == "gray":
         edgecolor = plotter.gray
-    kwargs.update(dict(s=size ** 2, edgecolor=edgecolor, linewidth=linewidth))
+    kwargs.update(dict(s=size**2, edgecolor=edgecolor, linewidth=linewidth))
 
     plotter.plot(ax, kwargs)
     return ax
@@ -3120,7 +3156,7 @@ def swarmplot(
         linewidth = size / 10
     if edgecolor == "gray":
         edgecolor = plotter.gray
-    kwargs.update(dict(s=size ** 2, edgecolor=edgecolor, linewidth=linewidth))
+    kwargs.update(dict(s=size**2, edgecolor=edgecolor, linewidth=linewidth))
 
     plotter.plot(ax, kwargs)
     return ax
@@ -3524,6 +3560,12 @@ def pointplot(
     errwidth=None,
     capsize=None,
     ax=None,
+    edgewidth=None,
+    edgecolor=None,
+    lineweight=None,
+    linealpha=None,
+    linecolor=None,
+    markersize=None,
     **kwargs,
 ):
 
@@ -3549,6 +3591,12 @@ def pointplot(
         palette,
         errwidth,
         capsize,
+        edgecolor,
+        edgewidth,
+        lineweight,
+        linealpha,
+        linecolor,
+        markersize,
     )
 
     if ax is None:
