@@ -322,6 +322,7 @@ class _CategoricalPlotter(object):
         # Assign object attributes
         self.colors = rgb_colors
         self.gray = gray
+        
 
     @property
     def hue_offsets(self):
@@ -957,13 +958,13 @@ class _ViolinPlotter(_CategoricalPlotter):
         q25, q50, q75 = np.percentile(data, [25, 50, 75])
 
         self.draw_to_density(
-            ax, center, q25, support, density, split, linewidth=self.linewidth, dashes=[self.linewidth * 1.5] * 2
+            ax, center, q25, support, density, split, linewidth=1, dashes=[self.linewidth * 1.5] * 10,color='black',
         )
         self.draw_to_density(
-            ax, center, q50, support, density, split, linewidth=self.linewidth, dashes=[self.linewidth * 3] * 2
+            ax, center, q50, support, density, split, linewidth=self.linewidth,color='black', 
         )
         self.draw_to_density(
-            ax, center, q75, support, density, split, linewidth=self.linewidth, dashes=[self.linewidth * 1.5] * 2
+            ax, center, q75, support, density, split, linewidth=1, dashes=[self.linewidth * 1.5] * 10, color='black',
         )
 
     def draw_points(self, ax, data, center):
@@ -982,12 +983,17 @@ class _ViolinPlotter(_CategoricalPlotter):
         for val in data:
             self.draw_to_density(ax, center, val, support, density, split, linewidth=self.linewidth * 0.5)
 
-    def draw_to_density(self, ax, center, val, support, density, split, **kws):
+    def draw_to_density(self, ax, center, val, support, density, split,color=None, **kws):
         """Draw a line orthogonal to the value axis at width of density."""
         idx = np.argmin(np.abs(support - val))
         width = self.dwidth * density[idx] * 0.99
 
-        kws["color"] = self.gray
+
+        if not color:
+            kws["color"] = self.gray
+        else:
+            kws["color"] = color
+
 
         if self.orient == "v":
             if split == "left":
