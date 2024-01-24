@@ -1494,7 +1494,13 @@ class _CategoricalStatPlotter(_CategoricalPlotter):
                             estimate = estimator(stat_data)
                             sd = np.std(stat_data)
                             confint[i].append((estimate - sd, estimate + sd))
-
+                            
+                        elif ci == "wilson":
+                            estimate = estimator(stat_data)
+                            wilson_low, wilson_high = wls_confidence_interval(stat_data)
+                            # print(wilson_low, wilson_high)
+                            confint[i].append((wilson_low, wilson_high))
+                        
                         else:
 
                             boots = bootstrap(stat_data, func=estimator, n_boot=n_boot, units=unit_data, seed=seed)
